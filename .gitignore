@@ -1,0 +1,31 @@
+# 环境与密钥
+.env
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# 运行产物
+logs/
+*.log
+data/index/
+.pytest_tmp/
+
+# 编辑器
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# IDE/智能体工作区缓存（不随作品提交）
+.arts/
+.codeartsdoer/
+# 调试产物（含 Key 的临时页，绝不入库）
+logs_bak/
+logs_*/

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<style>
+  html, body { margin: 0; padding: 0; background: #ffffff; }
+  body { padding: 6px 2px; font-family: system-ui, -apple-system, "Microsoft YaHei", sans-serif; font-size: 14px; color: #24292f; }
+  button { padding: 6px 12px; font-size: 14px; border: 1px solid #1f6feb; background: #1f6feb; color: #ffffff; border-radius: 6px; cursor: pointer; }
+  input.result { margin-top: 6px; width: 100%; box-sizing: border-box; padding: 6px; font-size: 14px;
+                 font-family: ui-monospace, Consolas, monospace; border: 1px solid #2ea043; border-radius: 6px; background: #f6fff8; }
+  .hint { color: #57606a; font-size: 12px; margin-top: 4px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<button id="locate">定位我的位置</button>
+<input class="result" id="result" readonly placeholder="定位后显示 WGS84 坐标，复制到下方输入框" />
+<div class="hint" id="hint">浏览器定位固定为 WGS84；组件在沙箱 iframe 里，结果需复制到下方输入框。</div>
+<script>
+(function () {
+  var result = document.getElementById("result");
+  var hint = document.getElementById("hint");
+
+  document.getElementById("locate").addEventListener("click", function () {
+    if (!navigator.geolocation) {
+      hint.textContent = "当前浏览器不支持定位。";
+      return;
+    }
+    hint.textContent = "正在定位…";
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        var text = position.coords.latitude.toFixed(5) + "," + position.coords.longitude.toFixed(5);
+        result.value = text;
+        result.focus();
+        result.select();
+        hint.textContent = "已显示 WGS84 坐标：按 Ctrl+C 复制，粘贴到下方输入框并把坐标系选为 WGS84。";
+      },
+      function (error) {
+        var reason = "定位失败";
+        if (error && error.code === 1) { reason = "浏览器拒绝了组件内定位（iframe 权限或站点设置）"; }
+        else if (error && error.code === 3) { reason = "定位超时"; }
+        hint.textContent = reason + "；可重试，或用手机地图 App 查坐标手动填入。";
+      },
+      { enableHighAccuracy: true, timeout: 9000, maximumAge: 60000 }
+    );
+  });
+})();
+</script>
+</body>
+</html>
