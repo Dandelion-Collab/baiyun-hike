@@ -79,6 +79,22 @@ def test_distance_to_nearest_gate_rejects_unknown_coord_system() -> None:
     raise AssertionError("未知坐标系应当抛 ValueError")
 
 
+def test_amap_origin_gcj02_matches_input() -> None:
+    # user_origin 存的是 GCJ02 时，规划起点不能再次做 WGS84→GCJ02 转换。
+    user_origin = {
+        "lat": 23.159042,
+        "lng": 113.296288,
+        "coord_system": "gcj02",
+    }
+
+    origin = geolocate.amap_origin(
+        user_origin["lat"], user_origin["lng"], user_origin["coord_system"]
+    )
+    lng, lat = (float(part) for part in origin.split(","))
+
+    assert _distance_m(lat, lng, user_origin["lat"], user_origin["lng"]) < 1
+
+
 def test_distance_to_nearest_gate_radius_threshold() -> None:
     name, km, at_gate = geolocate.distance_to_nearest_gate(23.1291, 113.2644, 120)
     assert name == "白云山南门"

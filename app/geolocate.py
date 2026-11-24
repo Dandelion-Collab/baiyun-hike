@@ -123,3 +123,20 @@ def distance_to_nearest_gate(
         gcj_lat, gcj_lng, float(best["lat"]), float(best["lng"])
     )
     return str(best["name"]), km, km <= radius_m / 1000.0
+
+def amap_origin(
+    lat: float, lng: float, coord_system: str = DEFAULT_COORD_SYSTEM
+) -> str:
+    """返回高德接口需要的 "lng,lat" 字符串。
+
+    "wgs84" 先转 GCJ-02；"gcj02" 原样输出。格式化到 6 位小数（约 0.1 米）。
+    """
+
+    if coord_system not in COORD_SYSTEMS:
+        raise ValueError(
+            f"coord_system 只能是 {COORD_SYSTEMS}，收到 {coord_system!r}"
+        )
+
+    if coord_system == "wgs84":
+        lat, lng = wgs84_to_gcj02(lat, lng)
+    return f"{lng:.6f},{lat:.6f}"

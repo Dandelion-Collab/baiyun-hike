@@ -15,7 +15,7 @@ from app.checker import TRANSPORT_LABELS, check
 from app.dayroute import plan_day
 from app.exceptions import ParseError
 from app.gates import load_gates
-from app.geolocate import distance_to_nearest_gate, wgs84_to_gcj02
+from app.geolocate import COORD_SYSTEMS, amap_origin, distance_to_nearest_gate
 from app.graph import load_graph
 from app.mapview import render_route_svg
 from app.parser import parse_itinerary
@@ -60,6 +60,8 @@ def _origin_ready(user_origin: dict | None) -> bool:
     if not user_origin:
         return False
     if user_origin.get("lat") is None or user_origin.get("lng") is None:
+        return False
+    if user_origin.get("coord_system") not in COORD_SYSTEMS:
         return False
     if not user_origin.get("gate"):
         return False
@@ -404,6 +406,7 @@ with tab_route:
                             st.session_state["user_origin"] = {
                                 "lat": lat_u,
                                 "lng": lng_u,
+                                "coord_system": coord_system,
                                 "gate": gate_name,
                                 "km": km,
                                 "at_gate": at_gate,
@@ -456,8 +459,11 @@ with tab_route:
         start_label = "我的位置" if start_id == "__me__" else node_names[start_id]
 
         if start_id == "__me__" and user_origin:
-            gcj_lat, gcj_lng = wgs84_to_gcj02(user_origin["lat"], user_origin["lng"])
-            origin = f"{gcj_lng:.6f},{gcj_lat:.6f}"
+            origin = amap_origin(
+                user_origin["lat"],
+                user_origin["lng"],
+                user_origin["coord_system"],
+            )
             km = user_origin.get("km")
             if km is not None and float(km) > 50:
                 st.warning(
