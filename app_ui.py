@@ -36,9 +36,27 @@ LEVEL_ROWS = (
     ("info", "仅供参考", False),
 )
 LIGHTING_LABELS = {"good": "有", "partial": "部分", "none": "无（注意安全）", "": "未知"}
+DAY_LABELS = (
+    "第一天",
+    "第二天",
+    "第三天",
+    "第四天",
+    "第五天",
+    "第六天",
+    "第七天",
+    "第八天",
+    "第九天",
+    "第十天",
+)
 
 WEB_KEY = os.environ.get("AMAP_KEY", "").strip()
 JS_KEY = os.environ.get("AMAP_JS_KEY", "").strip()
+
+
+def _day_label(index: int) -> str:
+    if 0 <= index < len(DAY_LABELS):
+        return DAY_LABELS[index]
+    return f"第{index + 1}天"
 
 
 def _to_minutes(value: str) -> int:
@@ -138,10 +156,17 @@ def _render_day_map(itinerary) -> None:
     if not days:
         return
 
-    if len(days) > 1:
-        day = st.selectbox("查看哪一天", list(days))
+    day_keys = list(days)
+    if len(day_keys) > 1:
+        day_index = st.selectbox(
+            "查看哪一天",
+            range(len(day_keys)),
+            format_func=_day_label,
+        )
     else:
-        day = next(iter(days))
+        day_index = 0
+    day = day_keys[day_index]
+    day_label = _day_label(day_index)
 
     entries = days[day]
     markers = []
@@ -156,7 +181,7 @@ def _render_day_map(itinerary) -> None:
 
     center, zoom = _bbox([lnglat for _, lnglat in entries])
     legs = []
-    if len(entries) >= 2 and st.checkbox("把当天各站连成路线", key=f"day_route_{day}"):
+    if len(entries) >= 2 and st.checkbox("把当天各站连成路线", key=f"day_route_{day_index}"):
         legs = plan_day(entries, key_available=bool(WEB_KEY))
 
     paths = []
@@ -172,7 +197,7 @@ def _render_day_map(itinerary) -> None:
 
     html = build_map_html(center=center, zoom=zoom, paths=paths, markers=markers)
     if html:
-        st.caption(f"{day} 行程点地图（底图：高德）")
+        st.caption(f"{day_label} 行程点地图（底图：高德）")
         components.html(html, height=480)
 
     for leg in legs:
